@@ -1,0 +1,14 @@
+services:
+  flux:
+    image: ghcr.io/casterlabs/flux:latest
+    restart: always
+    environment:
+      # Replace issuer & secret with your desired values. This uses HMAC256. 
+      # Set the `flux_recv` claim to a regex [array] for allowed paths to receive on.
+      # Set the `flux_send` claim to a regex [array] for allowed paths to send on.
+      # `sub` is an optional field that you can use to force a particular UserID. MUST BE UNIQUE!
+      FLUX_AUTHENTICATOR: "jwt://issuer@secret"
+      FLUX_IS_BEHIND_PROXY: false
+    ports:
+      - 9000:7080 # Change 9000 to your liking.
+      - 7081:7081 # Stats endpoint.
