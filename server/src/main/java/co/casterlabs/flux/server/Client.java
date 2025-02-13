@@ -111,20 +111,20 @@ public class Client implements Closeable {
                         if (this.isClosed) return;
 
                         Tube tube = subscriptions.get(packet.tube);
-                        if (tube == null) {
-                            if (!this.auth.canReceive(packet.tube)) {
-                                this.handleOutgoing(
-                                    new FFPacketError(
-                                        FFPacketError.Reason.SUBSCRIPTION_FAILED_PERMISSIONS,
-                                        packet.tube
-                                    )
-                                );
-                                return;
-                            }
+                        if (tube != null) return;
 
-                            tube = Tube.get(packet.tube, true);
-                            subscriptions.put(packet.tube, tube);
+                        if (!this.auth.canReceive(packet.tube)) {
+                            this.handleOutgoing(
+                                new FFPacketError(
+                                    FFPacketError.Reason.SUBSCRIPTION_FAILED_PERMISSIONS,
+                                    packet.tube
+                                )
+                            );
+                            return;
                         }
+
+                        tube = Tube.get(packet.tube, true);
+                        subscriptions.put(packet.tube, tube);
 
                         tube.registerReceiver(this);
                         return;
