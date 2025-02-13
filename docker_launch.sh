@@ -8,4 +8,4 @@ java \
 	-XX:+ExplicitGCInvokesConcurrent -XX:+UseCompressedOops \
 	-XX:+UseShenandoahGC -XX:+ShenandoahPacing -XX:+ShenandoahDegeneratedGC \
 	-XX:MinHeapFreeRatio=15 -XX:MaxHeapFreeRatio=30 \
-	-jar ../flux.jar
+	-jar ../server.jar
