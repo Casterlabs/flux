@@ -162,6 +162,9 @@ public class Client implements Closeable {
 
     @FunctionalInterface
     public static interface Handle {
+        public static final Handle NOOP = (p) -> {
+        };
+
         public void handleOutgoing(FromFluxPacket packet) throws Throwable;
     }
 

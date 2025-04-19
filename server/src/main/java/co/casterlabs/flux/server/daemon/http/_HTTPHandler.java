@@ -1,9 +1,7 @@
 package co.casterlabs.flux.server.daemon.http;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import co.casterlabs.flux.server.Client;
+import co.casterlabs.flux.server.Client.Handle;
 import co.casterlabs.flux.server.Flux;
 import co.casterlabs.flux.server.authenticator.Authenticator.AuthenticationException;
 import co.casterlabs.flux.server.packet.incoming.ToFluxPacket;
@@ -49,8 +47,6 @@ class _HTTPHandler implements HttpProtoHandler {
                         .raw()
                         .substring("Bearer ".length());
 
-                    List<FromFluxPacket> receivedPackets = new ArrayList<>();
-
                     ToFluxPacket packet;
                     if (protocol.supportsBinary()) {
                         packet = protocol.parse(session.body().bytes());
@@ -69,22 +65,14 @@ class _HTTPHandler implements HttpProtoHandler {
                         );
                     }
 
-                    try (Client client = new Client(token, receivedPackets::add, false)) {
+                    try (Client client = new Client(token, Handle.NOOP, false)) {
                         client.processIncoming(packet);
 
-                        if (receivedPackets.isEmpty()) {
-                            return protoResponse(
-                                protocol,
-                                StandardHttpStatus.CREATED,
-                                FFPacketAck.INSTANCE
-                            );
-                        } else {
-                            return protoResponse(
-                                protocol,
-                                StandardHttpStatus.BAD_REQUEST,
-                                receivedPackets.get(0)
-                            );
-                        }
+                        return protoResponse(
+                            protocol,
+                            StandardHttpStatus.CREATED,
+                            FFPacketAck.INSTANCE
+                        );
                     }
                 } catch (WireProtocolException e) {
                     if (Flux.DEBUG) {
