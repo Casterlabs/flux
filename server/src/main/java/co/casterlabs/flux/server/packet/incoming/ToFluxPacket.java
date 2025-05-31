@@ -1,14 +1,9 @@
 package co.casterlabs.flux.server.packet.incoming;
 
+import co.casterlabs.flux.server.packet.PacketType;
+
 public interface ToFluxPacket {
 
-    public Type type();
-
-    static enum Type {
-        KEEP_ALIVE,
-        PUBLISH,
-        SUBSCRIBE,
-        UNSUBSCRIBE,
-    }
+    public PacketType type();
 
 }

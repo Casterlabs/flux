@@ -1,8 +1,17 @@
 package co.casterlabs.flux.server.types;
 
+import java.nio.charset.StandardCharsets;
+
 interface _StringType extends CharSequence {
 
     public String backing();
+
+    /**
+     * @return a byte array with a max length of u16
+     */
+    default byte[] bytes() {
+        return this.backing().getBytes(StandardCharsets.UTF_8);
+    }
 
     @Override
     default int length() {

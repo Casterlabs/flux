@@ -1,5 +1,6 @@
 package co.casterlabs.flux.server.protocols;
 
+import co.casterlabs.flux.server.packet.PacketType;
 import co.casterlabs.flux.server.packet.incoming.TFPacketKeepAlive;
 import co.casterlabs.flux.server.packet.incoming.TFPacketPublish;
 import co.casterlabs.flux.server.packet.incoming.TFPacketSubscribe;
@@ -12,28 +13,25 @@ import co.casterlabs.rakurai.json.Rson;
 import co.casterlabs.rakurai.json.element.JsonObject;
 import co.casterlabs.rakurai.json.serialization.JsonParseException;
 
-record JsonWireProtocol(
+record _JsonWireProtocol(
     Type type
-) implements WireProtocol {
-    static final JsonWireProtocol INSTANCE = new JsonWireProtocol(Type.JSON);
-
-    @Override
-    public ToFluxPacket parse(byte[] bytes) throws WireProtocolException {
-        throw new WireProtocolException("Binary not supported.");
-    }
+) implements StringWireProtocol {
+    static final _JsonWireProtocol INSTANCE = new _JsonWireProtocol(Type.JSON);
 
     @Override
     public ToFluxPacket parse(String str) throws WireProtocolException {
         Profile profile = Profiler.PROTOCOL_JSON_PARSE.start();
         try {
             JsonObject obj = Rson.DEFAULT.fromJson(str, JsonObject.class);
-            ToFluxPacket.Type type = ToFluxPacket.Type.valueOf(obj.getString("type").toUpperCase());
+            PacketType type = PacketType.valueOf(obj.getString("type").toUpperCase());
             return switch (type) {
                 // @formatter:off
                 case KEEP_ALIVE  -> TFPacketKeepAlive.INSTANCE;
                 case PUBLISH     -> Rson.DEFAULT.fromJson(obj, TFPacketPublish.class);
                 case SUBSCRIBE   -> Rson.DEFAULT.fromJson(obj, TFPacketSubscribe.class);
                 case UNSUBSCRIBE -> Rson.DEFAULT.fromJson(obj, TFPacketUnsubscribe.class);
+                
+				default -> throw new WireProtocolException("Unsupported packet type: " + type);
                 // @formatter:on
             };
         } catch (IllegalArgumentException e) {
@@ -46,7 +44,7 @@ record JsonWireProtocol(
     }
 
     @Override
-    public Object serialize(FromFluxPacket packet) {
+    public String serialize(FromFluxPacket packet) throws WireProtocolException {
         Profile profile = Profiler.PROTOCOL_JSON_SERIALIZE.start();
         try {
             return Rson.DEFAULT
@@ -55,16 +53,6 @@ record JsonWireProtocol(
         } finally {
             profile.end();
         }
-    }
-
-    @Override
-    public boolean supportsBinary() {
-        return false;
-    }
-
-    @Override
-    public boolean supportsText() {
-        return true;
     }
 
 }

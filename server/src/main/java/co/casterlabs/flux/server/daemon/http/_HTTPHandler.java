@@ -1,13 +1,17 @@
 package co.casterlabs.flux.server.daemon.http;
 
+import co.casterlabs.commons.io.bytes.reading.ArrayByteReader;
 import co.casterlabs.flux.server.Client;
 import co.casterlabs.flux.server.Client.Handle;
 import co.casterlabs.flux.server.Flux;
 import co.casterlabs.flux.server.authenticator.Authenticator.AuthenticationException;
+import co.casterlabs.flux.server.packet.PacketType;
 import co.casterlabs.flux.server.packet.incoming.ToFluxPacket;
 import co.casterlabs.flux.server.packet.outgoing.FFPacketAck;
 import co.casterlabs.flux.server.packet.outgoing.FFPacketError;
 import co.casterlabs.flux.server.packet.outgoing.FromFluxPacket;
+import co.casterlabs.flux.server.protocols.BinaryWireProtocol;
+import co.casterlabs.flux.server.protocols.StringWireProtocol;
 import co.casterlabs.flux.server.protocols.WireProtocol;
 import co.casterlabs.flux.server.protocols.WireProtocol.WireProtocolException;
 import co.casterlabs.flux.server.util.Profiler;
@@ -48,13 +52,13 @@ class _HTTPHandler implements HttpProtoHandler {
                         .substring("Bearer ".length());
 
                     ToFluxPacket packet;
-                    if (protocol.supportsBinary()) {
-                        packet = protocol.parse(session.body().bytes());
+                    if (protocol instanceof BinaryWireProtocol bin) {
+                        packet = bin.parse(new ArrayByteReader(session.body().bytes()));
                     } else {
-                        packet = protocol.parse(session.body().string());
+                        packet = ((StringWireProtocol) protocol).parse(session.body().string());
                     }
 
-                    if (packet.type() != ToFluxPacket.Type.PUBLISH) {
+                    if (packet.type() != PacketType.PUBLISH) {
                         return protoResponse(
                             protocol,
                             StandardHttpStatus.BAD_REQUEST,
@@ -140,28 +144,31 @@ class _HTTPHandler implements HttpProtoHandler {
                     return null;
                 }
 
+            case "application/octet-stream":
+                return WireProtocol.TYPES.get(WireProtocol.Type.BINARY);
+
             default:
                 return null;
         }
     }
 
     private static HttpResponse protoResponse(WireProtocol protocol, HttpStatus status, FromFluxPacket packet) {
-        Object serialized = protocol.serialize(packet);
-        HttpResponse response;
-
-        if (serialized instanceof byte[]) {
-            response = HttpResponse.newFixedLengthResponse(status, (byte[]) serialized);
+        if (protocol instanceof BinaryWireProtocol bin) {
+            return new HttpResponse(new _BinaryResponseContent(bin, packet), status)
+                .header("Content-Type", "application/octet-stream");
         } else {
-            response = HttpResponse.newFixedLengthResponse(status, (String) serialized);
-        }
+            try {
+                String serialized = ((StringWireProtocol) protocol).serialize(packet);
 
-        switch (protocol.type()) {
-            case JSON:
-                response.header("Content-Type", "application/json; charset=utf-8");
-                break;
+                return HttpResponse.newFixedLengthResponse(status, serialized)
+                    .header("Content-Type", "application/json; charset=utf-8");
+            } catch (WireProtocolException e) {
+                if (Flux.DEBUG) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
         }
-
-        return cors(response);
     }
 
     private static HttpResponse cors(HttpResponse response) {

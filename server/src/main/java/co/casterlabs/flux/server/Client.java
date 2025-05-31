@@ -43,9 +43,6 @@ public class Client implements Closeable {
         Profile profile = Profiler.CLIENT_INCOMING.start();
         try {
             switch (rawPacket.type()) {
-                case KEEP_ALIVE:
-                    return; // The transport takes care of the connection life-cycle.
-
                 case PUBLISH: {
                     TFPacketPublish packet = (TFPacketPublish) rawPacket;
                     if (this.isClosed) return;
@@ -97,10 +94,10 @@ public class Client implements Closeable {
                         Tube tube = subscriptions.remove(packet.tube);
                         if (tube == null) return;
                         tube.unregisterReceiver(this);
-                        return;
                     } finally {
                         this.subscriptions.release();
                     }
+                    return;
                 }
 
                 case SUBSCRIBE: {
@@ -127,11 +124,18 @@ public class Client implements Closeable {
                         subscriptions.put(packet.tube, tube);
 
                         tube.registerReceiver(this);
-                        return;
                     } finally {
                         this.subscriptions.release();
                     }
+                    return;
                 }
+
+                case KEEP_ALIVE:
+                    return; // The transport takes care of the connection life-cycle.
+
+                default:
+                    this.handleOutgoing(new FFPacketError(FFPacketError.Reason.PACKET_INVALID, Flux.CONTROL_TUBEID));
+                    return;
             }
         } finally {
             profile.end();

@@ -1,5 +1,6 @@
 package co.casterlabs.flux.server.types;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 import org.jetbrains.annotations.Nullable;
@@ -47,6 +48,14 @@ public record Message<T>(T value) {
         }
 
         return "Message(<string>, '" + this.asString() + "')";
+    }
+
+    public byte[] bytes() {
+        if (this.isBinary()) {
+            return this.asBinary();
+        } else {
+            return this.asString().getBytes(StandardCharsets.UTF_8);
+        }
     }
 
 }
