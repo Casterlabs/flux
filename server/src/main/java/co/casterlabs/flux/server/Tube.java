@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.jetbrains.annotations.Nullable;
 
+import co.casterlabs.flux.server.packet.outgoing.FFPacketMemberJoin;
+import co.casterlabs.flux.server.packet.outgoing.FFPacketMemberLeave;
 import co.casterlabs.flux.server.packet.outgoing.FFPacketMembers;
 import co.casterlabs.flux.server.packet.outgoing.FFPacketMessage;
 import co.casterlabs.flux.server.packet.outgoing.FromFluxPacket;
@@ -34,6 +36,7 @@ public class Tube {
 
             if (!this.isMeta) {
                 this.send(new FFPacketMembers(newClientsArr.length, this.id));
+                this.send(new FFPacketMemberJoin(client.auth.id(), this.id));
             }
         } finally {
             this.clients.release();
@@ -62,6 +65,7 @@ public class Tube {
                     Flux.metaTubeDestroy.send(new FFPacketMessage(new Message<>(this.id.backing()), Flux.META_PUBLISHER, Flux.metaTubeDestroy.id));
                 } else {
                     this.send(new FFPacketMembers(newClientsArr.length, this.id));
+                    this.send(new FFPacketMemberLeave(client.auth.id(), this.id));
                 }
             }
         } finally {

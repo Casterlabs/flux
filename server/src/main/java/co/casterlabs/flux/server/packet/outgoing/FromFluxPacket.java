@@ -14,6 +14,8 @@ public interface FromFluxPacket {
     static enum Type {
         KEEP_ALIVE,
         MEMBERS,
+        MEMBER_JOIN,
+        MEMBER_LEAVE,
         MESSAGE,
         ERROR,
         ACK,
