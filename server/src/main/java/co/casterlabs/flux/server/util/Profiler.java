@@ -27,9 +27,9 @@ public enum Profiler {
     // @formatter:on
     ;
 
-    public static final long EXPIRE_AFTER = TimeUnit.SECONDS.toMillis(10);
+    public static final long EXPIRE_AFTER = TimeUnit.SECONDS.toMillis(60);
 
-    private final LockableResource<ProfileEntry[]> entries = new LockableResource<>(new ProfileEntry[10_000]);
+    private final LockableResource<ProfileEntry[]> entries = new LockableResource<>(new ProfileEntry[1_000]);
     private volatile int entryPtr = 0;
     private volatile long total = 0;
 
