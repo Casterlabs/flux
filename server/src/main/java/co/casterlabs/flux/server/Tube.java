@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import co.casterlabs.flux.server.packet.outgoing.FFPacketMembers;
 import co.casterlabs.flux.server.packet.outgoing.FFPacketMessage;
 import co.casterlabs.flux.server.packet.outgoing.FromFluxPacket;
+import co.casterlabs.flux.server.types.Message;
 import co.casterlabs.flux.server.types.TubeID;
 import co.casterlabs.flux.server.util.LockableResource;
 import co.casterlabs.flux.server.util.Profiler;
@@ -58,7 +59,7 @@ public class Tube {
             if (!this.isMeta) {
                 if (newClientsArr.length == 0) {
                     tubes.remove(this.id);
-                    Flux.metaTubeDestroy.send(new FFPacketMessage(this.id.backing(), Flux.META_PUBLISHER, Flux.metaTubeDestroy.id));
+                    Flux.metaTubeDestroy.send(new FFPacketMessage(new Message<>(this.id.backing()), Flux.META_PUBLISHER, Flux.metaTubeDestroy.id));
                 } else {
                     this.send(new FFPacketMembers(newClientsArr.length, this.id));
                 }
@@ -97,7 +98,7 @@ public class Tube {
                 tubes.put(id, tube);
 
                 if (!tube.isMeta) {
-                    Flux.metaTubeCreate.send(new FFPacketMessage(id.backing(), Flux.META_PUBLISHER, Flux.metaTubeDestroy.id));
+                    Flux.metaTubeCreate.send(new FFPacketMessage(new Message<>(id.backing()), Flux.META_PUBLISHER, Flux.metaTubeDestroy.id));
                 }
             }
             return tube;
