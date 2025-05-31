@@ -128,7 +128,7 @@
 			<version>e060139</version>
 			<scope>compile</scope>
 		</dependency>
-		
+
 		<!-- BinaryWireProtocol -->
 		<dependency>
 			<groupId>co.casterlabs.commons</groupId>
@@ -136,7 +136,7 @@
 			<version>082a719</version>
 			<scope>compile</scope>
 		</dependency>
-		
+
 		<!-- JsonWireProtocol -->
 		<dependency>
 			<groupId>co.casterlabs</groupId>
