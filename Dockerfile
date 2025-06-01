@@ -4,7 +4,7 @@ WORKDIR /home/container
 LABEL org.opencontainers.image.source="https://github.com/casterlabs/flux"
 
 # code
-COPY ./server/target/server.jar /home/container
+COPY ./java/server/target/server.jar /home/container
 COPY ./docker_launch.sh /home/container
 RUN chmod +x docker_launch.sh
 
