@@ -8,7 +8,7 @@ import co.casterlabs.flux.packets.protocols.WireProtocolException;
 import co.casterlabs.flux.packets.types.TubeID;
 import co.casterlabs.flux.packets.types.UserID;
 
-public class TypesTest {
+public class TestTypes {
 
     @Test
     public void tube() throws WireProtocolException {

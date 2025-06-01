@@ -26,7 +26,7 @@ import co.casterlabs.flux.packets.types.Message;
 import co.casterlabs.flux.packets.types.TubeID;
 import co.casterlabs.flux.packets.types.UserID;
 
-public class BinaryWireTest {
+public class TestBinaryWire {
     private static final BinaryWireProtocol PROTOCOL = ByteWireProtocol.INSTANCE;
 
     @Test

@@ -23,7 +23,7 @@ import co.casterlabs.flux.packets.types.Message;
 import co.casterlabs.flux.packets.types.TubeID;
 import co.casterlabs.flux.packets.types.UserID;
 
-public class JsonWireTest {
+public class TestJsonWire {
     private static final StringWireProtocol PROTOCOL = JsonWireProtocol.INSTANCE;
 
     @Test
