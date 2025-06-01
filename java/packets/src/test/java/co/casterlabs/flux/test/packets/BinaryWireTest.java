@@ -134,6 +134,7 @@ public class BinaryWireTest {
         PROTOCOL.serialize(copy, writer2);
 
         assertEquals(writer.buffer().length, writer2.buffer().length, "byte len");
+        assertEquals(writer.buffer().length, PROTOCOL.sizeOf(source), "sizeof");
         assertArrayEquals(writer.buffer(), writer2.buffer(), "sane");
         assertEquals(source, copy, "equals");
     }
