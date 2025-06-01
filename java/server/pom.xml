@@ -87,21 +87,5 @@
 			<version>e060139</version>
 			<scope>compile</scope>
 		</dependency>
-
-		<!-- BinaryWireProtocol -->
-		<dependency>
-			<groupId>co.casterlabs.commons</groupId>
-			<artifactId>io</artifactId>
-			<version>082a719</version>
-			<scope>compile</scope>
-		</dependency>
-
-		<!-- JsonWireProtocol -->
-		<dependency>
-			<groupId>co.casterlabs</groupId>
-			<artifactId>Rson</artifactId>
-			<version>1.18.0</version>
-			<scope>compile</scope>
-		</dependency>
 	</dependencies>
 </project>
