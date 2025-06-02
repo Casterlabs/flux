@@ -6,8 +6,9 @@
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>server</module>
 		<module>packets</module>
+		<module>client</module>
+		<module>server</module>
 	</modules>
 
 	<properties>
