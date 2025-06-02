@@ -27,9 +27,7 @@ import co.casterlabs.rhs.protocol.http.HttpSession;
 
 class _HTTPHandler implements HttpProtoHandler {
     static final HeaderValue ANONYMOUS_BEARER = new HeaderValue("Bearer anonymous");
-    private static final String UNSUPPORTED_PROTO_MESSAGE = "Unsupported protocol (a.k.a Content-Type), supported types:"
-        + "\n- application/json; charset=utf-8"
-        + "\n- application/octet-stream";
+    private static final String UNSUPPORTED_PROTO_MESSAGE = "Unsupported protocol (Content-Type), supported types:" + String.join("\n- ", WireProtocol.MIMES.keySet());
 
     @Override
     public HttpResponse handle(HttpSession session) throws HttpException, DropConnectionException {
@@ -123,34 +121,19 @@ class _HTTPHandler implements HttpProtoHandler {
             return null;
         }
 
-        String value = header.withoutDirectives().toLowerCase();
-
-        switch (value) {
-            case "application/json":
-                if (header.directives().getSingleOrDefault("charset", "utf-8").equalsIgnoreCase("utf-8")) {
-                    return WireProtocol.TYPES.get(WireProtocol.Type.JSON);
-                } else {
-                    return null;
-                }
-
-            case "application/octet-stream":
-                return WireProtocol.TYPES.get(WireProtocol.Type.BYTES);
-
-            default:
-                return null;
-        }
+        return WireProtocol.MIMES.get(header.withoutDirectives().toLowerCase());
     }
 
     private static HttpResponse protoResponse(WireProtocol protocol, HttpStatus status, Packet packet) {
         if (protocol instanceof BinaryWireProtocol bin) {
             return new HttpResponse(new _BinaryResponseContent(bin, packet), status)
-                .header("Content-Type", "application/octet-stream");
+                .header("Content-Type", protocol.mime());
         } else {
             try {
                 String serialized = ((StringWireProtocol) protocol).serialize(packet);
 
                 return HttpResponse.newFixedLengthResponse(status, serialized)
-                    .header("Content-Type", "application/json; charset=utf-8");
+                    .header("Content-Type", protocol.mime());
             } catch (WireProtocolException e) {
                 if (Flux.DEBUG) {
                     e.printStackTrace();

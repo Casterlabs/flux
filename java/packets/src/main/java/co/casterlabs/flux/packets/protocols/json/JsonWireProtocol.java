@@ -63,4 +63,9 @@ public class JsonWireProtocol implements StringWireProtocol {
         return Type.JSON;
     }
 
+    @Override
+    public String mime() {
+        return "application/json";
+    }
+
 }

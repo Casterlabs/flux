@@ -79,4 +79,9 @@ public class ByteWireProtocol implements BinaryWireProtocol {
         return Type.BYTES;
     }
 
+    @Override
+    public String mime() {
+        return "application/octet-stream";
+    }
+
 }
