@@ -3,6 +3,7 @@ package co.casterlabs.flux.client.realtime.websocket;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 
 import org.jetbrains.annotations.Nullable;
@@ -34,16 +35,17 @@ import co.casterlabs.flux.packets.types.TubeID;
 import lombok.NonNull;
 
 class _FluxWebsocketClient implements FluxRealtimeClient {
+    private final ReentrantLock tubeLock = new ReentrantLock();
+
     private final Map<TubeID, FluxTubeListener> tubeListeners = new HashMap<>();
     private final WebSocketListener wsListener = new WSListener();
-
     private final FluxRealtimeClientListener realtimeListener;
 
     private final Function<WireProtocol, WebSocketClient> websocketFactory;
     private final WireProtocol protocol;
     private final long timeout;
 
-    private boolean closed = false;
+    private State state = State.CONNECTED;
     private WebSocketClient websocket;
 
     public _FluxWebsocketClient(@NonNull FluxWebsocketClientBuilder config) throws IOException {
@@ -63,7 +65,7 @@ class _FluxWebsocketClient implements FluxRealtimeClient {
     }
 
     private void reconnect() throws IOException {
-        if (this.closed) return;
+        if (this.state == State.CLOSED) return;
 
         this.websocket = this.websocketFactory.apply(this.protocol);
         this.websocket.setListener(this.wsListener);
@@ -72,7 +74,7 @@ class _FluxWebsocketClient implements FluxRealtimeClient {
 
     @Override
     public FluxRealtimeClient publish(@NonNull String tube, @NonNull String message) {
-        if (this.closed) {
+        if (this.state != State.CONNECTED) {
             return this; // NOOP
         }
 
@@ -88,7 +90,7 @@ class _FluxWebsocketClient implements FluxRealtimeClient {
 
     @Override
     public FluxRealtimeClient publish(@NonNull String tube, @NonNull byte[] message) {
-        if (this.closed) {
+        if (this.state != State.CONNECTED) {
             return this; // NOOP
         }
 
@@ -104,52 +106,81 @@ class _FluxWebsocketClient implements FluxRealtimeClient {
 
     @Override
     public FluxRealtimeClient subscribe(@NonNull String tube, @NonNull FluxTubeListener listener) {
-        if (this.closed) {
-            return this; // NOOP
-        }
-
+        tubeLock.lock();
         try {
-            TubeID tubeId = new TubeID(tube);
+            switch (this.state) {
+                case CLOSED:
+                    break; // NOOP
 
-            if (this.tubeListeners.containsKey(tubeId)) {
-                // ONLY replace the listener.
-                this.tubeListeners.put(tubeId, listener);
-                return this;
+                case CONNECTED:
+                    try {
+                        TubeID tubeId = new TubeID(tube);
+
+                        if (this.tubeListeners.containsKey(tubeId)) {
+                            // ONLY replace the listener.
+                            this.tubeListeners.put(tubeId, listener);
+                            return this;
+                        }
+
+                        this.tubeListeners.put(tubeId, listener);
+                        send(new PacketSubscribe(tubeId));
+                    } catch (WireProtocolException | IOException e) {
+                        this.realtimeListener.onException(e);
+                    }
+                    break;
+
+                case RECONNECTING: {
+                    TubeID tubeId = new TubeID(tube);
+                    this.tubeListeners.put(tubeId, listener);
+                    break;
+                }
+
             }
-
-            this.tubeListeners.put(tubeId, listener);
-            send(new PacketSubscribe(tubeId));
-        } catch (WireProtocolException | IOException e) {
-            this.realtimeListener.onException(e);
+            return this;
+        } finally {
+            tubeLock.unlock();
         }
-        return this;
     }
 
     @Override
     public FluxRealtimeClient unsubscribe(@NonNull String tube) {
-        if (this.closed) {
-            return this; // NOOP
-        }
-
+        tubeLock.lock();
         try {
-            TubeID tubeId = new TubeID(tube);
+            switch (this.state) {
+                case CLOSED:
+                    break; // NOOP
 
-            this.tubeListeners.remove(tubeId);
-            send(new PacketUnsubscribe(tubeId));
-        } catch (WireProtocolException | IOException e) {
-            this.realtimeListener.onException(e);
+                case CONNECTED:
+                    try {
+                        TubeID tubeId = new TubeID(tube);
+
+                        this.tubeListeners.remove(tubeId);
+                        send(new PacketUnsubscribe(tubeId));
+                    } catch (WireProtocolException | IOException e) {
+                        this.realtimeListener.onException(e);
+                    }
+                    break;
+
+                case RECONNECTING: {
+                    TubeID tubeId = new TubeID(tube);
+                    this.tubeListeners.remove(tubeId);
+                    break;
+                }
+            }
+            return this;
+        } finally {
+            tubeLock.unlock();
         }
-        return this;
     }
 
     @Override
     public void close() throws IOException {
-        if (this.closed) {
+        if (this.state == State.CLOSED) {
             return; // NOOP
         }
 
-        this.closed = true;
-        this.websocket.close();
+        this.state = State.CLOSED;
+        if (this.websocket != null) this.websocket.close();
     }
 
     private void send(Packet packet) throws WireProtocolException, IOException {
@@ -170,9 +201,7 @@ class _FluxWebsocketClient implements FluxRealtimeClient {
 
         @Override
         public void onOpen(WebSocketClient client, Map<String, String> headers, @Nullable String acceptedProtocol) {
-            tubeListeners.clear(); // IMPORTANT!
-
-            if (closed) {
+            if (state == State.CLOSED) {
                 client.close(); // Just in case...
             }
         }
@@ -180,7 +209,14 @@ class _FluxWebsocketClient implements FluxRealtimeClient {
         private void handle(Packet packet) throws WireProtocolException, IOException {
             switch (packet.type()) {
                 case ACK:
-                    realtimeListener.onReady(_FluxWebsocketClient.this);
+                    tubeLock.lock();
+                    try {
+                        for (TubeID id : tubeListeners.keySet()) {
+                            send(new PacketSubscribe(id));
+                        }
+                    } finally {
+                        tubeLock.unlock();
+                    }
                     return;
 
                 case KEEP_ALIVE:
@@ -290,21 +326,40 @@ class _FluxWebsocketClient implements FluxRealtimeClient {
 
         @Override
         public void onClosed(WebSocketClient client) {
-            if (closed) {
+            if (state == State.RECONNECTING) return;
+
+            if (state == State.CLOSED) {
                 // We're done.
                 realtimeListener.onClose();
                 return;
             }
 
-            try {
-                reconnect();
-            } catch (IOException e) {
-                // We failed to reconnect.
-                realtimeListener.onException(e);
-                realtimeListener.onClose();
-            }
+            state = State.RECONNECTING;
+
+            Thread.ofPlatform()
+                .name("FluxWebsocketClient.ReconnectThread")
+                .daemon(false)
+                .start(() -> {
+                    while (state == State.RECONNECTING) {
+                        try {
+                            // Retry connection.
+                            Thread.sleep(timeout / 2);
+                            reconnect();
+                            state = State.CONNECTED;
+                        } catch (Throwable t) {
+                            // We failed to connect, try again.
+                            realtimeListener.onException(t);
+                        }
+                    }
+                });
         }
 
+    }
+
+    private static enum State {
+        CONNECTED,
+        RECONNECTING,
+        CLOSED
     }
 
 }

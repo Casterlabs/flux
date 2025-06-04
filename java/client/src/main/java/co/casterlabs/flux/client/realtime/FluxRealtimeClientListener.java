@@ -4,8 +4,6 @@ import co.casterlabs.flux.packets.PacketError;
 
 public interface FluxRealtimeClientListener {
 
-    public default void onReady(FluxRealtimeClient client) {}
-
     public default void onClose() {}
 
     public default void onError(PacketError.Reason reason) {
