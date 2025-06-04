@@ -27,7 +27,7 @@
 					</execution>
 				</executions>
 				<configuration>
-					<shadedArtifactAttached>false</shadedArtifactAttached>
+					<shadedArtifactAttached>true</shadedArtifactAttached>
 					<finalName>${project.name}</finalName>
 					<transformers>
 						<transformer
