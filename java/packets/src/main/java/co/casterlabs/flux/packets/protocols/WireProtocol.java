@@ -2,6 +2,7 @@ package co.casterlabs.flux.packets.protocols;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import co.casterlabs.flux.packets.protocols.bytes.ByteWireProtocol;
 import co.casterlabs.flux.packets.protocols.json.JsonWireProtocol;
@@ -16,15 +17,8 @@ public sealed interface WireProtocol permits BinaryWireProtocol, StringWireProto
         ByteWireProtocol.INSTANCE
     );
 
-    public static final Map<Type, WireProtocol> TYPES = Map.of(
-        Type.JSON, JsonWireProtocol.INSTANCE,
-        Type.BYTES, ByteWireProtocol.INSTANCE
-    );
-
-    public static final Map<String, WireProtocol> MIMES = Map.of(
-        JsonWireProtocol.INSTANCE.mime(), JsonWireProtocol.INSTANCE,
-        JsonWireProtocol.INSTANCE.mime(), ByteWireProtocol.INSTANCE
-    );
+    public static final Map<Type, WireProtocol> TYPES = ALL.stream().collect(Collectors.toMap(p -> p.type(), p -> p));
+    public static final Map<String, WireProtocol> MIMES = ALL.stream().collect(Collectors.toMap(p -> p.mime(), p -> p));
 
     public Type type();
 
