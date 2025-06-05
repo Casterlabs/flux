@@ -10,5 +10,6 @@ services:
       FLUX_AUTHENTICATOR: "jwt://issuer@secret"
       FLUX_IS_BEHIND_PROXY: false
     ports:
-      - 9000:7080 # Change 9000 to your liking.
-      - 7081:7081 # Stats endpoint.
+      - 7080:7080 # HTTP endpoint
+      - 7081:7081 # Stats endpoint
+      - 7082:7082 # TCP endpoint

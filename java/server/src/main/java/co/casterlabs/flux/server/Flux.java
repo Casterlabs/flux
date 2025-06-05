@@ -16,6 +16,7 @@ public class Flux {
     public static final boolean DEBUG = "true".equalsIgnoreCase(System.getenv("FLUX_DEBUG"));
 
     public static final String META_SEQ = "__flux:";
+    public static final String META_TUBE_AUTH = META_SEQ + "authenticate";
 
     // @formatter:off
     public static final UserID META_PUBLISHER      = new UserID(META_SEQ + "meta"     );
