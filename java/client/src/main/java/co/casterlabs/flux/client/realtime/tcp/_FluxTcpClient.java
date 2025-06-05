@@ -75,6 +75,15 @@ class _FluxTcpClient implements FluxRealtimeClient {
                 this.handle(packet);
             }
         } catch (EndOfStreamException e) {
+            // Handled by finally{}
+        } catch (Throwable t) {
+            this.realtimeListener.onException(t);
+        } finally {
+            try {
+                this.socket.close();
+            } catch (IOException ignored) {}
+            this.socket = null;
+
             if (this.state == State.CLOSED) {
                 // We're done.
                 this.realtimeListener.onClose();
@@ -98,15 +107,6 @@ class _FluxTcpClient implements FluxRealtimeClient {
                         }
                     }
                 });
-        } catch (Throwable t) {
-            this.realtimeListener.onException(t);
-        } finally {
-            try {
-                this.socket.close();
-            } catch (IOException e) {
-                this.realtimeListener.onException(e);
-            }
-            this.socket = null;
         }
     }
 
