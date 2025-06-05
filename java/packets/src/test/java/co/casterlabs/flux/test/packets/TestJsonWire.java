@@ -2,6 +2,8 @@ package co.casterlabs.flux.test.packets;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 import org.junit.jupiter.api.Test;
 
 import co.casterlabs.flux.packets.Packet;
@@ -85,7 +87,11 @@ public class TestJsonWire {
     public void message_binary() throws WireProtocolException {
         UserID from = UserID.random();
         TubeID tube = new TubeID("example");
-        Message<byte[]> message = new Message<>("abcdefghijklmnopqrstuvwxyz".getBytes());
+
+        byte[] bytes = new byte[128];
+        ThreadLocalRandom.current().nextBytes(bytes);
+
+        Message<byte[]> message = new Message<>(bytes);
 
         test(new PacketMessage(tube, from, message));
     }
@@ -101,7 +107,11 @@ public class TestJsonWire {
     @Test
     public void publish_binary() throws WireProtocolException {
         TubeID tube = new TubeID("example");
-        Message<byte[]> message = new Message<>("abcdefghijklmnopqrstuvwxyz".getBytes());
+
+        byte[] bytes = new byte[128];
+        ThreadLocalRandom.current().nextBytes(bytes);
+
+        Message<byte[]> message = new Message<>(bytes);
 
         test(new PacketPublish(tube, message));
     }

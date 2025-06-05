@@ -3,6 +3,8 @@ package co.casterlabs.flux.test.packets;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 import org.junit.jupiter.api.Test;
 
 import co.casterlabs.commons.io.bytes.reading.ArrayByteReader;
@@ -88,7 +90,11 @@ public class TestBinaryWire {
     public void message_binary() throws WireProtocolException {
         UserID from = UserID.random();
         TubeID tube = new TubeID("example");
-        Message<byte[]> message = new Message<>("abcdefghijklmnopqrstuvwxyz".getBytes());
+
+        byte[] bytes = new byte[128];
+        ThreadLocalRandom.current().nextBytes(bytes);
+
+        Message<byte[]> message = new Message<>(bytes);
 
         test(new PacketMessage(tube, from, message));
     }
@@ -104,7 +110,11 @@ public class TestBinaryWire {
     @Test
     public void publish_binary() throws WireProtocolException {
         TubeID tube = new TubeID("example");
-        Message<byte[]> message = new Message<>("abcdefghijklmnopqrstuvwxyz".getBytes());
+
+        byte[] bytes = new byte[128];
+        ThreadLocalRandom.current().nextBytes(bytes);
+
+        Message<byte[]> message = new Message<>(bytes);
 
         test(new PacketPublish(tube, message));
     }
@@ -134,7 +144,7 @@ public class TestBinaryWire {
         PROTOCOL.serialize(copy, writer2);
 
         assertEquals(writer.buffer().length, writer2.buffer().length, "byte len");
-        assertEquals(writer.buffer().length, PROTOCOL.sizeOf(source), "sizeof");
+        assertEquals(PROTOCOL.sizeOf(source), writer.buffer().length, "sizeof");
         assertArrayEquals(writer.buffer(), writer2.buffer(), "sane");
         assertEquals(source, copy, "equals");
     }

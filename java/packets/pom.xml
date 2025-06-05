@@ -23,7 +23,7 @@
 		<dependency>
 			<groupId>co.casterlabs.commons</groupId>
 			<artifactId>io</artifactId>
-			<version>082a719</version>
+			<version>3f8687d</version>
 			<scope>compile</scope>
 		</dependency>
 
