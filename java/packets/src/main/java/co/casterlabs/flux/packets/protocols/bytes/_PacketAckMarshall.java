@@ -20,9 +20,4 @@ class _PacketAckMarshall implements _Marshall<PacketAck> {
         _Marshall.varstr16(writer, packet.id.bytes());
     }
 
-    @Override
-    public long sizeOf(PacketAck packet) {
-        return 2 + packet.id.bytes().length; // id
-    }
-
 }

@@ -23,10 +23,4 @@ class _PacketMemberJoinMarshall implements _Marshall<PacketMemberJoin> {
         _Marshall.varstr16(writer, packet.member.bytes());
     }
 
-    @Override
-    public long sizeOf(PacketMemberJoin packet) {
-        return 2 + packet.tube.bytes().length // tube
-            + 2 + packet.member.bytes().length; // member
-    }
-
 }

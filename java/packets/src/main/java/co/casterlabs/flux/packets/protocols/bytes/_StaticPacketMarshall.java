@@ -21,9 +21,4 @@ class _StaticPacketMarshall<T extends Packet> implements _Marshall<T> {
         // NOOP.
     }
 
-    @Override
-    public long sizeOf(T packet) {
-        return 0;
-    }
-
 }

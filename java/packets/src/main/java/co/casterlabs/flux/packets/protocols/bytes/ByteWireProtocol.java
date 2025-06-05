@@ -63,17 +63,6 @@ public class ByteWireProtocol implements BinaryWireProtocol {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public <P extends Packet> long sizeOf(P packet) {
-        _Marshall<P> marshall = (_Marshall<P>) MARSHALLS.get(packet.type());
-        if (marshall == null) {
-            throw new RuntimeException("Unhandled packet type: " + packet.type());
-        }
-
-        return 1 + marshall.sizeOf(packet); // +1 for the type
-    }
-
     @Override
     public Type type() {
         return Type.BYTES;

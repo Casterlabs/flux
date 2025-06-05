@@ -21,9 +21,4 @@ class _PacketSubscribeMarshall implements _Marshall<PacketSubscribe> {
         _Marshall.varstr16(writer, packet.tube.bytes());
     }
 
-    @Override
-    public long sizeOf(PacketSubscribe packet) {
-        return 2 + packet.tube.bytes().length; // tube
-    }
-
 }

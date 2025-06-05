@@ -12,8 +12,6 @@ public interface _Marshall<T extends Packet> {
 
     public void write(T packet, ByteWriter writer) throws IOException;
 
-    public long sizeOf(T packet);
-
     public static void varstr16(ByteWriter writer, byte[] bytes) throws IOException {
         writer.be.u16(bytes.length);
         writer.write(bytes);

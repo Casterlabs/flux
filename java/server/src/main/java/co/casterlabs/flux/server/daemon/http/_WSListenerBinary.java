@@ -20,11 +20,8 @@ class _WSListenerBinary extends _WSListenerBase {
     @Override
     public void handleOutgoing(Packet packet) {
         try {
-            long length = this.protocol.sizeOf(packet);
-            ArrayByteWriter writer = new ArrayByteWriter((int) length);
-
+            ArrayByteWriter writer = new ArrayByteWriter();
             this.protocol.serialize(packet, writer);
-
             this.websocket.send(writer.buffer());
         } catch (IOException | WireProtocolException ignored) {}
     }

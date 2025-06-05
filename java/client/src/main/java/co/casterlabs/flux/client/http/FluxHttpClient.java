@@ -80,7 +80,7 @@ public class FluxHttpClient {
         RequestBody body;
 
         if (this.protocol instanceof BinaryWireProtocol bin) {
-            ArrayByteWriter serializedPacket = new ArrayByteWriter((int) bin.sizeOf(packet));
+            ArrayByteWriter serializedPacket = new ArrayByteWriter();
             bin.serialize(packet, serializedPacket);
 
             body = RequestBody.create(

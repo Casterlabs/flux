@@ -21,9 +21,4 @@ class _PacketErrorMarshall implements _Marshall<PacketError> {
         writer.be.u8(packet.reason.id);
     }
 
-    @Override
-    public long sizeOf(PacketError packet) {
-        return 1; // reason
-    }
-
 }

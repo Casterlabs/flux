@@ -190,7 +190,7 @@ class _FluxWebsocketClient implements FluxRealtimeClient {
         } else {
             BinaryWireProtocol bin = (BinaryWireProtocol) this.protocol;
 
-            ArrayByteWriter dest = new ArrayByteWriter((int) bin.sizeOf(packet));
+            ArrayByteWriter dest = new ArrayByteWriter();
             bin.serialize(packet, dest);
 
             this.websocket.send(dest.buffer());

@@ -45,12 +45,4 @@ class _PacketMessageMarshall implements _Marshall<PacketMessage> {
         _Marshall.varstr31(writer, packet.message.toBytes());
     }
 
-    @Override
-    public long sizeOf(PacketMessage packet) {
-        return 2 + packet.tube.bytes().length      // tube
-            + 2 + packet.from.bytes().length       // from
-            + 1                                    // message type
-            + 4 + packet.message.toBytes().length; // message
-    }
-
 }

@@ -10,6 +10,4 @@ public non-sealed interface BinaryWireProtocol extends WireProtocol {
 
     public <P extends Packet> void serialize(P packet, ByteWriter writer) throws WireProtocolException;
 
-    public <P extends Packet> long sizeOf(P packet);
-
 }

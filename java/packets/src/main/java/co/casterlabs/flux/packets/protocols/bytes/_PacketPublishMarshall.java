@@ -42,11 +42,4 @@ class _PacketPublishMarshall implements _Marshall<PacketPublish> {
         _Marshall.varstr31(writer, packet.message.toBytes());
     }
 
-    @Override
-    public long sizeOf(PacketPublish packet) {
-        return 2 + packet.tube.bytes().length      // tube
-            + 1                                    // message type
-            + 4 + packet.message.toBytes().length; // message
-    }
-
 }

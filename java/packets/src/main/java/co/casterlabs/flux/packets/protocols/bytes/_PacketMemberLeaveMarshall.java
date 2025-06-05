@@ -24,10 +24,4 @@ class _PacketMemberLeaveMarshall implements _Marshall<PacketMemberLeave> {
         _Marshall.varstr16(writer, packet.member.bytes());
     }
 
-    @Override
-    public long sizeOf(PacketMemberLeave packet) {
-        return 2 + packet.tube.bytes().length // tube
-            + 2 + packet.member.bytes().length; // member
-    }
-
 }

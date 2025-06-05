@@ -32,15 +32,4 @@ class _PacketMembersMarshall implements _Marshall<PacketMembers> {
         }
     }
 
-    @Override
-    public long sizeOf(PacketMembers packet) {
-        int membersLength = 0;
-        for (UserID member : packet.members) {
-            membersLength += 2 + member.bytes().length;
-        }
-
-        return 2 + packet.tube.bytes().length // tube
-            + 4 + membersLength; // members array length + members
-    }
-
 }

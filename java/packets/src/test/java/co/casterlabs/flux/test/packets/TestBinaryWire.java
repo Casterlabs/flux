@@ -134,17 +134,16 @@ public class TestBinaryWire {
     }
 
     private static void test(Packet source) throws WireProtocolException {
-        ArrayByteWriter writer = new ArrayByteWriter((int) PROTOCOL.sizeOf(source));
+        ArrayByteWriter writer = new ArrayByteWriter();
         PROTOCOL.serialize(source, writer);
 
         ArrayByteReader reader = new ArrayByteReader(writer.buffer());
         Packet copy = PROTOCOL.parse(reader);
 
-        ArrayByteWriter writer2 = new ArrayByteWriter((int) PROTOCOL.sizeOf(copy));
+        ArrayByteWriter writer2 = new ArrayByteWriter();
         PROTOCOL.serialize(copy, writer2);
 
-        assertEquals(writer.buffer().length, writer2.buffer().length, "byte len");
-        assertEquals(PROTOCOL.sizeOf(source), writer.buffer().length, "sizeof");
+        assertEquals(writer.buffer().length, writer2.buffer().length, "len");
         assertArrayEquals(writer.buffer(), writer2.buffer(), "sane");
         assertEquals(source, copy, "equals");
     }
