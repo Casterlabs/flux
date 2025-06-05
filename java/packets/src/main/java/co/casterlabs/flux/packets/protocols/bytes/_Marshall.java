@@ -20,7 +20,7 @@ public interface _Marshall<T extends Packet> {
     }
 
     public static byte[] varstr16(ByteReader reader) throws IOException {
-        int length = reader.be.u16() & 0xFFFF;
+        int length = reader.be.u16();
         return reader.read(length);
     }
 
