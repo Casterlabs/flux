@@ -12,7 +12,7 @@ public class TcpDaemon {
     private static final long TIMEOUT = TimeUnit.SECONDS.toMillis(60);
 
     public static void init() throws Exception {
-        int port = Integer.parseInt(System.getenv().getOrDefault("FLUX_TCP_PORT", "7082"));
+        int port = Integer.parseInt(System.getenv().getOrDefault("FLUX_TCP_PORT", "7083"));
         if (port <= 0) return;
 
         try (ServerSocket serverSocket = new ServerSocket()) {

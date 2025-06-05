@@ -12,4 +12,4 @@ services:
     ports:
       - 7080:7080 # HTTP endpoint
       - 7081:7081 # Stats endpoint
-      - 7082:7082 # TCP endpoint
+      - 7083:7083 # TCP endpoint
