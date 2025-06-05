@@ -39,7 +39,7 @@ public class TcpDaemon {
                                 t.printStackTrace();
                             }
                         }
-                    }).start();
+                    });
             }
         }
     }
