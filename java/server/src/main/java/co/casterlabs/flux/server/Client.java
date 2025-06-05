@@ -3,6 +3,9 @@ package co.casterlabs.flux.server;
 import java.io.Closeable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import co.casterlabs.flux.packets.Packet;
 import co.casterlabs.flux.packets.PacketError;
@@ -21,11 +24,15 @@ import co.casterlabs.flux.server.util.Profiler;
 import co.casterlabs.flux.server.util.Profiler.Profile;
 
 public class Client implements Closeable {
-    public final Authentication auth;
+    private static final ThreadFactory THREAD_FACTORY = Thread.ofVirtual().name("Client - Write Thread #", 0).factory();
 
-    private Handle handle;
+    private final ExecutorService outgoingQueue = Executors.newSingleThreadExecutor(THREAD_FACTORY);
+    private final LockableResource<Map<TubeID, Tube>> subscriptions = new LockableResource<>(new HashMap<>());
+
     private volatile boolean isClosed = false;
-    private LockableResource<Map<TubeID, Tube>> subscriptions = new LockableResource<>(new HashMap<>());
+    private final Handle handle;
+
+    public final Authentication auth;
 
     public Client(String token, Handle handle, boolean autoRegisterMeta) throws AuthenticationException {
         this.auth = Flux.authenticator.authenticate(token);
@@ -152,6 +159,8 @@ public class Client implements Closeable {
         } finally {
             this.subscriptions.release();
         }
+
+        this.outgoingQueue.shutdownNow();
     }
 
     void handleOutgoing(Packet packet) {
@@ -165,9 +174,11 @@ public class Client implements Closeable {
             if (this.auth.id().equals(message.from)) return;
         }
 
-        try {
-            this.handle.handleOutgoing(packet);
-        } catch (Throwable e) {}
+        this.outgoingQueue.submit(() -> {
+            try {
+                this.handle.handleOutgoing(packet);
+            } catch (Throwable e) {}
+        });
     }
 
     @FunctionalInterface
@@ -175,7 +186,7 @@ public class Client implements Closeable {
         public static final Handle NOOP = (p) -> {
         };
 
-        public void handleOutgoing(Packet packet) throws Throwable;
+        public void handleOutgoing(Packet packet);
     }
 
 }
